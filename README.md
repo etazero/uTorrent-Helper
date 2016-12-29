@@ -8,4 +8,6 @@ In order to determine TV shows you must have an empty folder of a TV show in the
 
 This app works best when a scheduled task is created to run every 2 to 3 minutes.
 
+This app also has the ability to email when files are moved, please update "sendEmail" method in the .cs file with your credentials to enable this feature. This will be a .config file field in the future.
+
 An official installer will be coming soon
