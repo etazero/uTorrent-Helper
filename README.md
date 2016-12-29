@@ -7,3 +7,5 @@ The app is hard coded to work from "C:\smartfilemover\" however this can be chan
 In order to determine TV shows you must have an empty folder of a TV show in the specified folder for the app to catalog it. The rest is automatic based on file sizes and other conditions.
 
 This app works best when a scheduled task is created to run every 2 to 3 minutes.
+
+An official installer will be coming soon
