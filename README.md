@@ -1,5 +1,6 @@
 # uTorrent-Helper
 *Compile with VS2010 or later*
+
 A small windows utility originally, SmartFileMover, however now uTorrent Helper. In conjunction with Plex the utility is used to automatically move files from the "downloaded" folder (that is setup in uTorrent) to the respective folders that are libraries on your Plex Server, automatically determining if it is a movie, TV show, video, etc.
 
 For it to work properly you must set the directories and file types in the .config file (you can also set the defaults in the .cs file) The app is hard coded to work from "C:\smartfilemover\" however this can be changed in the .cs file.
