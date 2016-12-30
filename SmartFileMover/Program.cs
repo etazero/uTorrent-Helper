@@ -10,9 +10,15 @@ using System.Xml;
 
 namespace SmartFileMover
 {
-    //This program watches the downloaded folder and automatically movies files based on particular credentials
+    /// <summary>
+    /// This program watches the downloaded folder and automatically movies files based on particular credentials
+    /// </summary>
+    /// <author>
+    /// Ben Guyton, Fantasy Driver Software c2015-2017
+    /// </author>
     class Program
     {
+        #region properties and parameters
         static string _monitoredDir = "E:\\Torrents\\Downloaded\\";
         static string _tvFolder = "E:\\TV\\";
         static string _movieFolder = "E:\\Movies\\";
@@ -26,7 +32,19 @@ namespace SmartFileMover
         static string _installDir = "C:\\smartFileMover\\";
         static ArrayList movedFiles = new ArrayList();
         static ArrayList failedFiles = new ArrayList();
+        static string _emailFromAddress = "myemail@email.com";
+        static string _emailFromName = "torrent helper";
+        static string _emailFromPass = "mypassword";
+        static string _emailHost = "host.emailserver.com";
+        static int _emailPort = 587;
+        static string _emailTo = "myotheremail@email.com";
+        #endregion
 
+        /// <summary>
+        /// main exicution thread,
+        /// this order of methord exicution should not be changed.
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {  
             //start timmer
@@ -35,7 +53,7 @@ namespace SmartFileMover
 
             //start log
             logCheck();
-            _log += "Smart File Mover Started: v.1.1 build:12-20-2016" + Environment.NewLine;
+            _log += "Smart File Mover Started: v.1.1.2 build:12-30-2016" + Environment.NewLine;
             DateTime startTime = DateTime.Now;
             _log += startTime.ToString() + Environment.NewLine;
 
@@ -62,7 +80,7 @@ namespace SmartFileMover
             }
             catch (Exception ex)
             {
-                _log += "A serious error has occurred: " + ex.Message + Environment.NewLine;
+                _log += "A serious error has occurred: " + ex.Message + Environment.NewLine; //key string used in logcheck
             }
             #endregion
 
@@ -88,6 +106,9 @@ namespace SmartFileMover
             }
         }
 
+        /// <summary>
+        /// reads and sets app's configuration from xml file within the installed directory
+        /// </summary>
         static void readFromConfigFile()
         {
             //read from xml.
@@ -107,6 +128,8 @@ namespace SmartFileMover
                     //music settings
                     XmlNode XMLmusicTypes = settings.DocumentElement["musicTypes"];
                     XmlNode XMLmusicFolder = settings.DocumentElement["musicFolder"];
+                    //install folder setting
+                    //XmlNode XMLinstallFolder = settings.DocumentElement["installFolder"];
 
                     //monitored folder
                     _monitoredDir = XMLmonitoredDir.Attributes["path"].Value.ToString();
@@ -124,6 +147,8 @@ namespace SmartFileMover
                     _musicTypes = XMLmusicTypes.Attributes["types"].Value.ToString();
                     //music folder
                     _musicFolder = XMLmusicFolder.Attributes["path"].Value.ToString();
+                    //install folder
+                    //_installDir = XMLinstallFolder.Attributes["path"].Value.ToString();
 
                     _log += "Config File Loaded" + Environment.NewLine;
                 }
@@ -142,6 +167,11 @@ namespace SmartFileMover
             }
         }
 
+        /// <summary>
+        /// builds a list of files from the downloaded folder,
+        /// that is specified earlier
+        /// </summary>
+        /// <returns></returns>
         static ArrayList filesInMonitoredDir()
         {
             ArrayList allfiles = new ArrayList();
@@ -174,12 +204,16 @@ namespace SmartFileMover
 
             if (!filesfound)
             {
-                _log += "No Video Files Found :(" + Environment.NewLine;
+                _log += "No Video Files Found :(" + Environment.NewLine; //key string used in logcheck
             }
 
             return allfiles;
         }
 
+        /// <summary>
+        /// builds a list of tv folders from a specified directory
+        /// </summary>
+        /// <returns></returns>
         static ArrayList tvSubFolders()
         {
             ArrayList subfolders = new ArrayList();
@@ -238,6 +272,13 @@ namespace SmartFileMover
             return subfolders;
         }
 
+        /// <summary>
+        /// will move files to specifed tv folders by name matching,
+        /// any remaining files will be considered movie files
+        /// </summary>
+        /// <param name="filesFound">a list of files large enough to be considered media</param>
+        /// <param name="tvFolders">a list of folders that will house tv shows</param>
+        /// <returns></returns>
         static ArrayList filterFilesForTV(ArrayList filesFound, ArrayList tvFolders)
         {
             bool fileMoved = false; //a control for later
@@ -426,6 +467,11 @@ namespace SmartFileMover
             return possibleMovieFiles;
         }
 
+        /// <summary>
+        /// will move file to specified movie folder, 
+        /// any remain will be noted as a video and moved to the specified video folder
+        /// </summary>
+        /// <param name="filesFromTVFilter"></param>
         static void filterAndMoveToMovies(ArrayList filesFromTVFilter)
         {
             bool fileMoved = false; //a control for later
@@ -555,6 +601,9 @@ namespace SmartFileMover
             }
         }
 
+        /// <summary>
+        /// will move any files with a music extention to the specified music folder
+        /// </summary>
         static void moveMusicToGmusic()
         {
             bool musicFound = false;
@@ -587,10 +636,14 @@ namespace SmartFileMover
             //after foreach in direcotry.
             if (!musicFound)
             {
-                _log += "No Music Files Found :(" + Environment.NewLine;
+                _log += "No Music Files Found :(" + Environment.NewLine; //key string used in logcheck
             }
         }
 
+        /// <summary>
+        /// determines if a log is written or not, 
+        /// also will delete if it reaches a certain size
+        /// </summary>
         static void logCheck()
         {
             //check and see if log contains "No Files Found :("
@@ -615,6 +668,14 @@ namespace SmartFileMover
             { }
         }
 
+        /// <summary>
+        /// sends an email with the list of files that were moved 
+        /// and any files that may have failed
+        /// </summary>
+        /// <param name="movieOrTv">either "movie" or "tv"</param>
+        /// <param name="movedFiles">a list of moved files</param>
+        /// <param name="failedFiles">a list of files that were not moved due to errors</param>
+        /// <returns></returns>
         static bool sendEmail(string movieOrTv, ArrayList movedFiles, ArrayList failedFiles)
         {
             bool emailSent = false;
@@ -624,22 +685,22 @@ namespace SmartFileMover
             //null check
             if (movedFiles.Count <= 0)
             {
-                _log += "Nothing to email :(" + Environment.NewLine;
+                _log += "Nothing to email :(" + Environment.NewLine; 
                 return false;
             }
 
             //setup client
             SmtpClient _eClient = new SmtpClient();
-            _eClient.Host = "smtp.mail.yahoo.com";
-            _eClient.Port = 587; //or 465, 25 
+            _eClient.Host = _emailHost;
+            _eClient.Port = _emailPort;
             _eClient.EnableSsl = true;
             _eClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-            _eClient.Credentials = new System.Net.NetworkCredential("youremail@email.com", "");
+            _eClient.Credentials = new System.Net.NetworkCredential(_emailFromAddress, _emailFromPass);
 
             //to/from/subject
             MailMessage email = new MailMessage();
-            MailAddress sender = new MailAddress("youremail@email.com", "Smart File Mover");
-            email.To.Add("sentto@email.com");
+            MailAddress sender = new MailAddress(_emailFromAddress, _emailFromName);
+            email.To.Add(_emailTo);
             email.From = sender;
             email.Subject = "SmartFileMover Status Update";
 
@@ -697,6 +758,10 @@ namespace SmartFileMover
         }
 
         #region other methods
+        /// <summary>
+        /// static list containing patterns to match with a file name to determine if contains season and episode info.
+        /// </summary>
+        /// <returns></returns>
         static ArrayList tvfolderSeasonsTemp()
         {
             ArrayList seasonsTemplate = new ArrayList();
@@ -1094,6 +1159,11 @@ namespace SmartFileMover
             return seasonsTemplate;
         }
 
+        /// <summary>
+        /// find and return the season in order to make a season folder
+        /// </summary>
+        /// <param name="SeasonNumber">the pattern found in the file name</param>
+        /// <returns></returns>
         static string getSeasonfolder(string SeasonNumber)
         {
             string seasonfolder = string.Empty;
@@ -1545,6 +1615,12 @@ namespace SmartFileMover
             return seasonfolder;
         }
 
+        /// <summary>
+        /// checks the name given for special characters that are specified earlier with a specific key, omits or replaces these characters
+        /// </summary>
+        /// <param name="tvDir">the tv show directory name</param>
+        /// <param name="smartTVdir">OUTPUT - the new name with spec char removed or replaced</param>
+        /// <param name="origTVdir">OUTPUT - the origional directory name</param>
         static void specChrCheck(string tvDir, out string smartTVdir, out string origTVdir)
         {
             smartTVdir = string.Empty;
